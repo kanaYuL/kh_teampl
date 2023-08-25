@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+ <mapper namespace="com.kh.teampl.marketMapper">
+ 
+		<!--  전체 글보기  -->
+	<select id="listAll" resultType="MarketboardVo"> 
+		select * from tbl_marketboard 
+						order by mbno desc
+	</select>
+	
+	 <select id="countAllItems" resultType="int">
+        SELECT COUNT(*) FROM market_board;
+    </select>
+	
+	<!--  다음 시퀀스 얻기  -->
+	<select id="getNextSeq" resultType="int"> 
+		select seq_marketboard_mbno.nextval 
+		from dual
+	</select>
+
+	<!--  글쓰기  -->
+	<insert id="insert"> 
+		insert into tbl_marketboard (mbno, mbtitle, mbcontents, mbwriter, mbcategories) 
+		values (#{mbno}, #{mbtitle}, #{mbcontents}, #{mbwriter}, #{mbcategories}) 
+	</insert>
+	
+	<!--  특정글 조회  -->
+	<select id="reading" resultType="MarketboardVo"> 
+			select * from tbl_marketboard 
+			where mbno = #{mbno} 
+	</select>
+	
+	<!--  글수정  -->
+	<update id="update"> 
+		update tbl_marketboard set
+		 	mbtitle = #{mbtitle},
+		 	mbcontents = #{mbcontents}, 
+		 	mbwriter = #{mbwriter},
+		 	mbcategories = #{mbcategories}
+		 where mbno = #{mbno} 
+	</update>
+	
+	<!--  글삭제  -->
+	<delete id="delete"> 
+		delete from tbl_marketboard 
+		where mbno = #{mbno} 
+	</delete>
+	
+	<!--  첨부파일 1개 삭제  -->
+	<delete id="deleteAttach">	
+		delete from tbl_market_attach 
+		where fullname = #{filename} 
+	</delete>
+	
+	<!--  첨부파일 목록  -->
+	<select id="getAttachList" resultType="string"> 
+		select fullname from tbl_market_attach 
+		where mbno = #{mbno} 
+	</select>
+	
+	<!--  첨부파일 테이블에 추가  -->
+	<insert id="insertAttach">
+		insert into tbl_market_attach(fullname, mbno) 
+		values (#{fullname}, #{mbno}) 
+	</insert> 
+
+	<!-- 조회수 증가 -->   
+	<update id="readcount">
+		update tbl_marketboard set
+			readcount = readcount + 1
+		where mbno = #{mbno}
+	</update>
+
+
+	<!-- 최다 조회수 글 목록 -->
+	<select id="readcountList" resultType="MarketboardVo">
+		<![CDATA[
+		select * from (select * from tbl_marketboard 
+						order by readcount desc)
+		where rownum <= 3
+		]]>
+	</select>
+	
+	<!--  검색 글보기  -->
+	<select id="searchList" resultType="MarketboardVo"> 
+		select * from tbl_marketboard
+		where mbcategories = #{mbcategories} and mbtitle like '%' || #{keyword} || '%'
+		order by mbno desc 
+	</select>
+	
+	<!--  판매완료  -->
+	<update id="soldOut"> 
+		update tbl_marketboard set
+		 	solddate = sysdate
+		 where mbno = #{mbno} 
+	</update>
+	
+	<!--  다이얼로그 글쓰기  -->
+	<insert id="insertDialog"> 
+		insert into tbl_marketboard_dialog (mbdno, attendant, drole, mbdcontents, mbno) 
+		values (#{mbdno}, #{attendant}, #{drole}, #{mbdcontents}, #{mbno}) 
+	</insert>
+	<!--  다음 시퀀스 얻기  -->
+	<select id="getNextSeqDialog" resultType="int"> 
+		select seq_marketboard_dialog_mbdno.nextval 
+		from dual
+	</select>
+	
+	<select id="getDialogList" resultType="com.kh.teampl.market.dialog.MarketboardDialogVo">
+		select * from tbl_marketboard_dialog
+		where mbno = #{mbno}
+		order by regdate		
+	</select>
+	
+	<select id="getAttendantList" resultType="String">
+		select distinct(attendant) from tbl_marketboard_dialog
+		where mbno = #{mbno} and drole = 'buyer'
+	</select>
+	
+	<!-- 전체 검색 글보기  -->
+	<select id="searchListAll" resultType="MarketboardVo"> 
+		select * from tbl_marketboard
+		where mbtitle like '%' || #{keyword} ||'%'
+		order by mbno desc 
+	</select>
+	
+ </mapper>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+ <mapper namespace="com.kh.teampl.userMapper">
+ 
+ 	<!-- ID 중복 검증 -->
+ 	<select id="isDupId" resultType="int">
+ 		select count(id) from tbl_user
+		where id = #{id}
+ 	</select>
+ 	
+ 	<!-- 신규 회원가입 -->
+ 	<insert id="createUser">
+ 		insert into tbl_user (id, pwd, email)
+ 		values (#{id}, #{pwd}, #{email})
+ 	</insert>
+ 	
+ 	<!-- 로그인 Transaction -->
+ 	
+ 	<!-- 로그인 검사-->
+ 	<select id="loginCheck" resultType="int">
+ 		select count(*) from tbl_user
+ 		where id = #{id} and pwd = #{pwd}
+ 	</select>
+ 	
+ 	<!-- 로그인 일자 갱신-->
+ 	<update id="updateloginDate">
+ 		update tbl_user set 
+    	recentLog = sysdate
+    	where id = #{id} and pwd = #{pwd}
+ 	</update>
+ 	
+ 	<!-- 한 명의 회원 정보 조회 -->
+ 	<select id="getUser" resultType="UserVo">
+ 		select * from tbl_user
+ 		where id = #{id} and pwd = #{pwd}
+ 	</select>
+ 	<!-- /로그인 Transaction -->
+ 	
+ 	<select id="getIDFromEmail" resultType="string">
+ 		select id from tbl_user
+ 		where email = #{email}
+ 	</select>
+ 	
+ 	<!-- 비밀번호 찾기, 아이디와 이메일 검증 -->
+ 	<select id="getUserFromIDEmail" resultType="UserVo">
+ 		select * from tbl_user
+ 		where id = #{id} and email = #{email}
+ 	</select>
+ 	
+ 	<update id="setNewPwd">
+ 		update tbl_user set 
+ 			pwd = #{pwd}
+ 		where id = #{id}
+ 	</update>
+ 	
+ </mapper>

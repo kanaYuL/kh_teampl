@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.teampl.LikeMapper">
+
+	<insert id="plus" >
+		insert into tbl_like(id, mbno)
+		values(#{id}, #{mbno})
+	</insert>
+	
+	<select id="set" resultType="LikeVo">
+		select * from tbl_like
+		where id = #{id}
+		and mbno = #{mbno}
+	</select>
+	
+	<delete id="cancel">
+		delete from tbl_like
+		where id = #{id}
+		and mbno = #{mbno}
+	</delete>
+	<select id="setCount" resultType="int">
+		select count(*) from tbl_like
+		where mbno = #{mbno}
+	</select>
+</mapper>

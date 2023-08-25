@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configuration 
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+ <configuration>
+ 	<!--  Class (Reference Type) 에 대한 별칭 -->
+ 	<typeAliases>
+ 		<!-- 클래스 단위 -->
+<!--  		<typeAlias type="com.kh.ex02.vo.BoardVo" -->
+<!--  				   alias="BoardVo"></typeAlias> -->
+ 		<!-- 패키지 단위 -->
+ 		<package name="com.kh.teampl.recipe.vo"></package>
+ 		<package name="com.kh.teampl.user"></package>
+ 		<package name="com.kh.teampl.market"></package>
+ 	</typeAliases>
+ </configuration>
+  
+  

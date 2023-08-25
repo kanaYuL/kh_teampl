@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.kh.teampl.recipeMapper">
+  
+  <!-- RecipeService - addMenu Transaction  -->
+  
+  <insert id="addMenu">
+     insert into tbl_menu (mno, mname, mdesc, mfilename)
+     values (seq_tbl_menu.nextval, #{mname}, #{mdesc}, #{mfilename})
+  </insert>
+  
+  <select id="getMnoAtItem" resultType="Integer">
+     select mno from tbl_menu
+     where mname = #{mname}
+  </select>
+  
+  <insert id="addCategory">
+     insert into tbl_recipe_ctg (mno, ctg, ctg_value)
+     values (#{mno}, #{ctg}, #{ctg_value})
+  </insert>
+  
+  <insert id="addIngredients">
+     insert into tbl_ingredients (mno, i_element) 
+     values (#{mno}, #{i_element})   
+  </insert>
+  
+  <!-- mno, ordernum, contents  -->
+  <insert id="addRecipe">
+     insert into tbl_recipe (mno, ordernum, contents)
+     values (#{mno}, #{ordernum}, #{contents})
+  </insert>
+  
+  <insert id="addAttach">
+     insert into tbl_attach (mno, filename, regdate)
+     values (#{mno}, #{filename}, sysdate)
+  </insert>
+  
+  <!-- /RecipeService - addMenu Transaction  -->
+  
+  <delete id="deleteAttach">
+     delete into tbl_attach
+     where filename = #{filename}
+  </delete>
+  
+  <delete id="recipeDelete">
+  	delete from tbl_menu
+  	where mno = #{mno}
+  </delete>
+  
+  <select id="getMenuList" resultType="MenuVo">
+     select * from tbl_menu
+     order by mno desc
+  </select>
+  
+  <!-- searchType -->
+   <sql id="search">
+      <if test="keyword != null">
+         <choose>
+            <when test="searchType == 't'.toString()">
+                    where mname like '%' || #{keyword} || '%'
+              </when>
+                 
+            <when test="searchType == 'c'.toString()">
+                    where mdesc like '%' || #{keyword} || '%'
+              </when>
+                 
+            <when test="searchType == 'tc'.toString()">
+                    where mname like '%' || #{keyword} || '%'
+                    or mdesc like '%' || #{keyword} || '%'
+              </when>      
+         </choose>  
+      </if>   
+   </sql>
+   
+   <!--  searching Filter  -->
+   <!--  1. temp -->
+   <sql id="tempFilter">
+      <if test="temp != null">
+         <choose>
+         <when test="temp == 'H'.toString()">
+            where (ctg = 'temp' and ctg_value = 'H')
+         </when>
+         <otherwise>
+            where (ctg = 'temp' and ctg_value = 'I')
+         </otherwise>
+      </choose>
+      </if>
+   </sql>
+   
+<!--      2. categories -->
+<!--    <sql id="categoryFilter"> -->
+<!--       where (1=2 -->
+<!--       <if test="latte == 'Y'.toString()">    -->
+<!--          or (ctg = 'latte' and ctg_value = 'Y') -->
+<!--       </if> -->
+      
+<!--       <if test="syrub == 'Y'.toString()">    -->
+<!--          or (ctg = 'syrub' and ctg_value = 'Y') -->
+<!--       </if> -->
+      
+<!--       <if test="alcohol == 'Y'.toString()">    -->
+<!--          or (ctg = 'alcohol' and ctg_value = 'Y') -->
+<!--       </if> -->
+      
+<!--       <if test="fruit == 'Y'.toString()">    -->
+<!--          or (ctg = 'fruit' and ctg_value = 'Y') -->
+<!--       </if> -->
+      
+<!--       <if test="cream == 'Y'.toString()">    -->
+<!--          or (ctg = 'cream' and ctg_value = 'Y') -->
+<!--       </if> -->
+<!--       ) -->
+<!--    </sql> -->
+   
+   <!--  2. categories -->
+   <sql id="categoryFilter">
+      where (1=2
+      <choose>
+         <when test="latte == 'Y'.toString()">
+            or (ctg = 'latte' and ctg_value = 'Y')
+         </when>
+         <otherwise>
+            or (ctg = 'latte' and ctg_value = 'N')
+         </otherwise>
+      </choose>
+      
+      <choose>
+         <when test="syrub == 'Y'.toString()">
+            or (ctg = 'syrub' and ctg_value = 'Y')
+         </when>
+         <otherwise>
+            or (ctg = 'syrub' and ctg_value = 'N')
+         </otherwise>
+      </choose>
+      
+      <choose>
+         <when test="alcohol == 'Y'.toString()">
+            or (ctg = 'alcohol' and ctg_value = 'Y')
+         </when>
+         <otherwise>
+            or (ctg = 'alcohol' and ctg_value = 'N')
+         </otherwise>
+      </choose>
+      
+      <choose>
+         <when test="fruit == 'Y'.toString()">
+            or (ctg = 'fruit' and ctg_value = 'Y')
+         </when>
+         <otherwise>
+            or (ctg = 'fruit' and ctg_value = 'N')
+         </otherwise>
+      </choose>
+      
+      <choose>
+         <when test="cream == 'Y'.toString()">
+            or (ctg = 'cream' and ctg_value = 'Y')
+         </when>
+         <otherwise>
+            or (ctg = 'cream' and ctg_value = 'N')
+         </otherwise>
+      </choose>
+      )
+   </sql>
+
+  <select id="getMenuListPerPage" resultType="MenuVo">
+     select a.*
+   from (select rownum as rnum, x.*
+       from ( select *
+                from tbl_menu m
+               <include refid="search"></include> 
+                 order by m.mno desc ) x,
+             ( select distinct(mno) from tbl_recipe_ctg
+               <include refid="tempFilter"></include>) y,
+             ( select distinct(mno) from tbl_recipe_ctg
+               <include refid="categoryFilter"></include>) z
+       where x.mno = y.mno
+      and y.mno = z.mno ) a
+   where rnum between #{startRow} and #{endRow}
+  </select>
+  
+  <select id="getMenuCountAtSearch" resultType="int">
+     select count(*)
+   from (select rownum as rnum, x.*
+       from ( select *
+                from tbl_menu m
+               <include refid="search"></include> 
+                 order by m.mno desc ) x,
+             ( select distinct(mno) from tbl_recipe_ctg
+               <include refid="tempFilter"></include>) y,
+             ( select distinct(mno) from tbl_recipe_ctg
+               <include refid="categoryFilter"></include>) z
+       where x.mno = y.mno
+      and y.mno = z.mno ) a
+  </select>
+  
+  <select id="getMenuCount" resultType="int">
+     select count(*) from tbl_menu
+  </select>
+  
+  <!-- recipeDetail.jsp -->
+  <select id="getMenu" resultType="MenuVo">
+   select * from tbl_menu
+   where mno = #{mno}
+  </select>
+  
+  <select id="getIngredients" resultType="string">
+     select i_element from tbl_ingredients
+     where mno = #{mno}
+  </select>
+  
+  <select id="getRecipe" resultType="string">
+     select contents from tbl_recipe
+     where mno = #{mno}
+     order by ordernum asc
+  </select>
+  
+  <select id="getAttachList" resultType="string">
+     select filename from tbl_attach
+     where mno = #{mno}
+  </select>
+  
+  <!--  index.jsp -> Random Images, names  -->
+  <select id="getIndexCarouselDtoList" resultType="IndexCarouselDto">
+     select mno, mname, mfilename from tbl_menu
+  </select>
+  
+  
+  </mapper>
+  
+  
